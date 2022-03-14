@@ -40,7 +40,8 @@ fi
 # Basic template create, rnfb install, link
 \rm -fr rnfbdemo
 
-echo "Testing react-native current + react-native-firebase current + Firebase SDKs current"
+#echo "Testing react-native current + react-native-firebase current + Firebase SDKs current"
+echo "Testing react-native current + catalyst builds"
 
 if ! which yarn > /dev/null 2>&1; then
   echo "This script uses yarn, please install yarn (for example \`npm i yarn -g\` and re-try"
@@ -60,24 +61,24 @@ yarn
 npm_config_yes=true npx pod-install
 
 # This is the most basic integration
-echo "Adding react-native-firebase core app package"
-yarn add "@react-native-firebase/app"
-echo "Adding basic iOS integration - AppDelegate import and config call"
-sed -i -e $'s/AppDelegate.h"/AppDelegate.h"\\\n#import <Firebase.h>/' ios/rnfbdemo/AppDelegate.m*
-rm -f ios/rnfbdemo/AppDelegate.m*-e
-sed -i -e $'s/RCTBridge \*bridge/if ([FIRApp defaultApp] == nil) { [FIRApp configure]; }\\\n  RCTBridge \*bridge/' ios/rnfbdemo/AppDelegate.m*
-rm -f ios/rnfbdemo/AppDelegate.m*-e
-echo "Adding basic java integration - gradle plugin dependency and call"
-sed -i -e $'s/dependencies {/dependencies {\\\n        classpath "com.google.gms:google-services:4.3.10"/' android/build.gradle
-rm -f android/build.gradle??
-sed -i -e $'s/apply plugin: "com.android.application"/apply plugin: "com.android.application"\\\napply plugin: "com.google.gms.google-services"/' android/app/build.gradle
-rm -f android/app/build.gradle??
+# echo "Adding react-native-firebase core app package"
+# yarn add "@react-native-firebase/app"
+# echo "Adding basic iOS integration - AppDelegate import and config call"
+# sed -i -e $'s/AppDelegate.h"/AppDelegate.h"\\\n#import <Firebase.h>/' ios/rnfbdemo/AppDelegate.m*
+# rm -f ios/rnfbdemo/AppDelegate.m*-e
+# sed -i -e $'s/RCTBridge \*bridge/if ([FIRApp defaultApp] == nil) { [FIRApp configure]; }\\\n  RCTBridge \*bridge/' ios/rnfbdemo/AppDelegate.m*
+# rm -f ios/rnfbdemo/AppDelegate.m*-e
+# echo "Adding basic java integration - gradle plugin dependency and call"
+# sed -i -e $'s/dependencies {/dependencies {\\\n        classpath "com.google.gms:google-services:4.3.10"/' android/build.gradle
+# rm -f android/build.gradle??
+# sed -i -e $'s/apply plugin: "com.android.application"/apply plugin: "com.android.application"\\\napply plugin: "com.google.gms.google-services"/' android/app/build.gradle
+# rm -f android/app/build.gradle??
 
 # Allow explicit SDK version control by specifying our iOS Pods and Android Firebase Bill of Materials
-echo "Adding upstream SDK overrides for precise version control"
-echo "project.ext{set('react-native',[versions:[firebase:[bom:'29.1.0'],],])}" >> android/build.gradle
-sed -i -e $'s/  target \'rnfbdemoTests\' do/  $FirebaseSDKVersion = \'8.13.0\'\\\n  target \'rnfbdemoTests\' do/' ios/Podfile
-rm -f ios/Podfile??
+# echo "Adding upstream SDK overrides for precise version control"
+# echo "project.ext{set('react-native',[versions:[firebase:[bom:'29.1.0'],],])}" >> android/build.gradle
+# sed -i -e $'s/  target \'rnfbdemoTests\' do/  $FirebaseSDKVersion = \'8.13.0\'\\\n  target \'rnfbdemoTests\' do/' ios/Podfile
+# rm -f ios/Podfile??
 
 # This is a reference to a pre-built version of Firestore. It's a neat trick to speed up builds.
 # If you are using firestore and database you *may* end up with duplicate symbol build errors referencing "leveldb", the FirebaseFirestoreExcludeLeveldb boolean fixes that.
@@ -85,26 +86,26 @@ rm -f ios/Podfile??
 #rm -f ios/Podfile??
 
 # Copy the Firebase config files in - you must supply them
-echo "For this demo to work, you must create an \`rnfbdemo\` project in your firebase console,"
-echo "then download the android json and iOS plist app definition files to the root directory"
-echo "of this repository"
+# echo "For this demo to work, you must create an \`rnfbdemo\` project in your firebase console,"
+# echo "then download the android json and iOS plist app definition files to the root directory"
+# echo "of this repository"
 
-echo "Copying in Firebase android json and iOS plist app definition files downloaded from console"
+# echo "Copying in Firebase android json and iOS plist app definition files downloaded from console"
 
-if [ "$(uname)" == "Darwin" ]; then
-  if [ -f "../GoogleService-Info.plist" ]; then
-    cp ../GoogleService-Info.plist ios/rnfbdemo/
-  else
-    echo "Unable to locate the file 'GoogleServices-Info.plist', did you create the firebase project and download the iOS file?"
-    exit 1
-  fi
-fi
-if [ -f "../google-services.json" ]; then
-  cp ../google-services.json android/app/
-else
-  echo "Unable to locate the file 'google-services.json', did you create the firebase project and download the android file?"
-  exit 1
-fi
+# if [ "$(uname)" == "Darwin" ]; then
+#   if [ -f "../GoogleService-Info.plist" ]; then
+#     cp ../GoogleService-Info.plist ios/rnfbdemo/
+#   else
+#     echo "Unable to locate the file 'GoogleServices-Info.plist', did you create the firebase project and download the iOS file?"
+#     exit 1
+#   fi
+# fi
+# if [ -f "../google-services.json" ]; then
+#   cp ../google-services.json android/app/
+# else
+#   echo "Unable to locate the file 'google-services.json', did you create the firebase project and download the android file?"
+#   exit 1
+# fi
 
 # Set up python virtual environment so we can do some local mods to Xcode project with mod-pbxproj
 # FIXME need to verify that python3 exists (recommend brew) and has venv module installed
@@ -118,62 +119,62 @@ sed -i -e $'s/org.reactjs.native.example/com/' ios/rnfbdemo.xcodeproj/project.pb
 rm -f ios/rnfbdemo.xcodeproj/project.pbxproj-e
 
 # Add our Google Services file to the Xcode project
-pbxproj file ios/rnfbdemo.xcodeproj rnfbdemo/GoogleService-Info.plist --target rnfbdemo
+# pbxproj file ios/rnfbdemo.xcodeproj rnfbdemo/GoogleService-Info.plist --target rnfbdemo
 
 # Toggle on iPad: add build flag: TARGETED_DEVICE_FAMILY = "1,2"
 pbxproj flag ios/rnfbdemo.xcodeproj --target rnfbdemo TARGETED_DEVICE_FAMILY "1,2"
 
 # From this point on we are adding optional modules
 # First set up all the modules that need no further config for the demo 
-echo "Adding packages: Analytics, App Check, Auth, Database, Dynamic Links, Firestore, Functions, In App Messaging, Installations, Messaging, ML, Remote Config, Storage"
-yarn add \
-  @react-native-firebase/analytics \
-  @react-native-firebase/app-check \
-  @react-native-firebase/auth \
-  @react-native-firebase/database \
-  @react-native-firebase/dynamic-links \
-  @react-native-firebase/firestore \
-  @react-native-firebase/functions \
-  @react-native-firebase/in-app-messaging \
-  @react-native-firebase/installations \
-  @react-native-firebase/messaging \
-  @react-native-firebase/remote-config \
-  @react-native-firebase/storage
+# echo "Adding packages: Analytics, App Check, Auth, Database, Dynamic Links, Firestore, Functions, In App Messaging, Installations, Messaging, ML, Remote Config, Storage"
+# yarn add \
+#   @react-native-firebase/analytics \
+#   @react-native-firebase/app-check \
+#   @react-native-firebase/auth \
+#   @react-native-firebase/database \
+#   @react-native-firebase/dynamic-links \
+#   @react-native-firebase/firestore \
+#   @react-native-firebase/functions \
+#   @react-native-firebase/in-app-messaging \
+#   @react-native-firebase/installations \
+#   @react-native-firebase/messaging \
+#   @react-native-firebase/remote-config \
+#   @react-native-firebase/storage
 
 # Crashlytics - repo, classpath, plugin, dependency, import, init
-echo "Setting up Crashlytics - package, gradle plugin"
-yarn add "@react-native-firebase/crashlytics"
-sed -i -e $'s/dependencies {/dependencies {\\\n        classpath "com.google.firebase:firebase-crashlytics-gradle:2.8.1"/' android/build.gradle
-rm -f android/build.gradle??
-sed -i -e $'s/"com.google.gms.google-services"/"com.google.gms.google-services"\\\napply plugin: "com.google.firebase.crashlytics"/' android/app/build.gradle
-rm -f android/app/build.gradle??
+# echo "Setting up Crashlytics - package, gradle plugin"
+# yarn add "@react-native-firebase/crashlytics"
+# sed -i -e $'s/dependencies {/dependencies {\\\n        classpath "com.google.firebase:firebase-crashlytics-gradle:2.8.1"/' android/build.gradle
+# rm -f android/build.gradle??
+# sed -i -e $'s/"com.google.gms.google-services"/"com.google.gms.google-services"\\\napply plugin: "com.google.firebase.crashlytics"/' android/app/build.gradle
+# rm -f android/app/build.gradle??
 
 # Performance - classpath, plugin, dependency, import, init
-echo "Setting up Performance - package, gradle plugin"
-yarn add "@react-native-firebase/perf"
-rm -f android/app/build.gradle??
-sed -i -e $'s/dependencies {/dependencies {\\\n        classpath "com.google.firebase:perf-plugin:1.4.1"/' android/build.gradle
-rm -f android/build.gradle??
-sed -i -e $'s/"com.google.gms.google-services"/"com.google.gms.google-services"\\\napply plugin: "com.google.firebase.firebase-perf"/' android/app/build.gradle
-rm -f android/app/build.gradle??
+# echo "Setting up Performance - package, gradle plugin"
+# yarn add "@react-native-firebase/perf"
+# rm -f android/app/build.gradle??
+# sed -i -e $'s/dependencies {/dependencies {\\\n        classpath "com.google.firebase:perf-plugin:1.4.1"/' android/build.gradle
+# rm -f android/build.gradle??
+# sed -i -e $'s/"com.google.gms.google-services"/"com.google.gms.google-services"\\\napply plugin: "com.google.firebase.firebase-perf"/' android/app/build.gradle
+# rm -f android/app/build.gradle??
 
 # App Distribution - classpath, plugin, dependency, import, init
-echo "Setting up Crashlytics - package, gradle plugin"
-yarn add "@react-native-firebase/app-distribution"
-sed -i -e $'s/dependencies {/dependencies {\\\n        classpath "com.google.firebase:firebase-appdistribution-gradle:3.0.0"/' android/build.gradle
-rm -f android/build.gradle??
+# echo "Setting up Crashlytics - package, gradle plugin"
+# yarn add "@react-native-firebase/app-distribution"
+# sed -i -e $'s/dependencies {/dependencies {\\\n        classpath "com.google.firebase:firebase-appdistribution-gradle:3.0.0"/' android/build.gradle
+# rm -f android/build.gradle??
 
 # I'm not going to demonstrate messaging and notifications. Everyone gets it wrong because it's hard. 
 # You've got to read the docs and test *EVERYTHING* one feature at a time.
 # But you have to do a *lot* of work in the AndroidManifest.xml, and make sure your MainActivity *is* the launch intent receiver
 # I include it for compile testing only.
 
-echo "Creating default firebase.json (with settings that allow iOS crashlytics to report crashes even in debug mode)"
-printf "{\n  \"react-native\": {\n    \"crashlytics_disable_auto_disabler\": true,\n    \"crashlytics_debug_enabled\": true\n  }\n}" > firebase.json
+# echo "Creating default firebase.json (with settings that allow iOS crashlytics to report crashes even in debug mode)"
+# printf "{\n  \"react-native\": {\n    \"crashlytics_disable_auto_disabler\": true,\n    \"crashlytics_debug_enabled\": true\n  }\n}" > firebase.json
 
 # Copy in our demonstrator App.js
-echo "Copying demonstrator App.js"
-rm ./App.js && cp ../App.js ./App.js
+# echo "Copying demonstrator App.js"
+# rm ./App.js && cp ../App.js ./App.js
 
 # Another Java build tweak - or gradle runs out of memory during the build
 echo "Increasing memory available to gradle for android java build"
@@ -234,11 +235,14 @@ if [ "$(uname)" == "Darwin" ]; then
   sed -i -e $'s/react_native_post_install(installer)/react_native_post_install(installer)\\\n    \\\n    installer.pods_project.targets.each do |target|\\\n      if target.respond_to?(:product_type) and target.product_type == "com.apple.product-type.bundle"\\\n        target.build_configurations.each do |config|\\\n          config.build_settings["CODE_SIGN_IDENTITY[sdk=macosx*]"] = "-"\\\n        end\\\n      end\\\n    end/' ios/Podfile
   rm -f ios/Podfile-e
 
-  # macCatalyst does not work with flipper - toggle it off
-  #sed -i -e $'s/use_flipper/#use_flipper/' ios/Podfile
-  # ...or specify versions of flipper for react-native 0.68 rc series while debugging flipper#3117
+  # Specify newly updated versions of flipper for react-native 0.68 rc series while debugging flipper#3117
   sed -i -e $'s/use_flipper!()/use_flipper!({ "Flipper" => "0.125.0", "Flipper-Folly" => "2.6.10", "Flipper-DoubleConversion" => "3.2.0", "Flipper-Glog" => "0.5.0.3", "Flipper-PeerTalk" => "0.0.4", "OpenSSL-Universal" => "1.1.1100" })/' ios/Podfile
   rm -f ios/Podfile.??
+
+  # macCatalyst requires one extra path on linker line: '$(SDKROOT)/System/iOSSupport/usr/lib/swift'
+  sed -i -e $'s/react_native_post_install(installer)/react_native_post_install(installer)\\\n    \\\n    installer.aggregate_targets.each do |aggregate_target|\\\n      aggregate_target.user_project.native_targets.each do |target|\\\n        target.build_configurations.each do |config|\\\n          config.build_settings[\'LIBRARY_SEARCH_PATHS\'] = [\'$(SDKROOT)\/usr\/lib\/swift\', \'$(SDKROOT)\/System\/iOSSupport\/usr\/lib\/swift\', \'$(inherited)\']\\\n        end\\\n      end\\\n      aggregate_target.user_project.save\\\n    end/' ios/Podfile
+  rm -f ios/Podfile.??
+
   npm_config_yes=true npx pod-install
 
   # Now run it with our mac device name as device target, that triggers catalyst build
