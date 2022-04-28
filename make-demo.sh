@@ -33,6 +33,11 @@ if [ "$(uname)" == "Darwin" ]; then
     printf "Try running it like: XCODE_DEVELOPMENT_TEAM=2W4T123443 ./make-demo.sh (but with your id)"
     printf "Skipping macCatalyst test"
     printf "\n\n\n\n\n**********************************\n\n\n\n"
+  else
+    # Verify we have ios-deploy installed, otherwise install it
+    if ! npm list --global |grep ios-deploy; then
+      echo "You must install ios-deploy globally for macCatalyst to work - npm install -g ios-deploy"
+    fi
   fi
 fi
 
@@ -49,7 +54,7 @@ if ! which yarn > /dev/null 2>&1; then
   exit 1
 fi
 
-npm_config_yes=true npx react-native init rnfbdemo --skip-install --version=0.68.0
+npm_config_yes=true npx react-native init rnfbdemo --skip-install --version=0.69.0-rc.6
 cd rnfbdemo
 
 # New versions of react-native include annoying Ruby stuff that forces use of old rubies. Obliterate.
@@ -165,7 +170,7 @@ rm -f android/app/build.gradle??
 # App Distribution - classpath, plugin, dependency, import, init
 echo "Setting up Crashlytics - package, gradle plugin"
 yarn add "@react-native-firebase/app-distribution"
-sed -i -e $'s/dependencies {/dependencies {\\\n        classpath "com.google.firebase:firebase-appdistribution-gradle:3.0.0"/' android/build.gradle
+sed -i -e $'s/dependencies {/dependencies {\\\n        classpath "com.google.firebase:firebase-appdistribution-gradle:3.0.1"/' android/build.gradle
 rm -f android/build.gradle??
 
 # I'm not going to demonstrate messaging and notifications. Everyone gets it wrong because it's hard. 
@@ -187,7 +192,9 @@ echo "org.gradle.jvmargs=-Xmx3072m -XX:MaxPermSize=1024m -XX:+HeapDumpOnOutOfMem
 # Hermes is available on both platforms and provides faster startup since it pre-parses javascript. Enable it.
 sed -i -e $'s/enableHermes: false/enableHermes: true/' android/app/build.gradle
 rm -f android/app/build.gradle??
-sed -i -e $'s/hermes_enabled => false/hermes_enabled => true/' ios/Podfile
+sed -i -e $'s/hermes_enabled => false/hermes_enabled => true/' ios/Podfile  # RN68 style hermes enable
+rm -f ios/Podfile??
+sed -i -e $'s/hermes_enabled => flags\[:hermes_enabled\]/hermes_enabled => true/' ios/Podfile  # RN69 style hermes enable
 rm -f ios/Podfile??
 
 # Apple builds in general have a problem with architectures on Apple Silicon and Intel, and doing some exclusions should help
@@ -213,6 +220,8 @@ npm_config_yes=true npx patch-package
 if [ "$(uname)" == "Darwin" ]; then
 
   echo "Installing pods and running iOS app"
+  export CC=clang
+  export CXX=clang++
   npm_config_yes=true npx pod-install
 
   # Check iOS debug mode compile
