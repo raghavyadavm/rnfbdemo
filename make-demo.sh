@@ -187,7 +187,9 @@ echo "org.gradle.jvmargs=-Xmx3072m -XX:MaxPermSize=1024m -XX:+HeapDumpOnOutOfMem
 # Hermes is available on both platforms and provides faster startup since it pre-parses javascript. Enable it.
 sed -i -e $'s/enableHermes: false/enableHermes: true/' android/app/build.gradle
 rm -f android/app/build.gradle??
-sed -i -e $'s/hermes_enabled => false/hermes_enabled => true/' ios/Podfile
+sed -i -e $'s/hermes_enabled => false/hermes_enabled => true/' ios/Podfile  # RN68 style hermes enable
+rm -f ios/Podfile??
+sed -i -e $'s/hermes_enabled => flags\[:hermes_enabled\]/hermes_enabled => true/' ios/Podfile  # RN69 style hermes enable
 rm -f ios/Podfile??
 
 # Apple builds in general have a problem with architectures on Apple Silicon and Intel, and doing some exclusions should help
@@ -216,6 +218,8 @@ npm_config_yes=true npx patch-package
 if [ "$(uname)" == "Darwin" ]; then
 
   echo "Installing pods and running iOS app"
+  export CC=clang
+  export CXX=clang++
   npm_config_yes=true npx pod-install
 
   # Check iOS debug mode compile
