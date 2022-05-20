@@ -33,6 +33,11 @@ if [ "$(uname)" == "Darwin" ]; then
     printf "Try running it like: XCODE_DEVELOPMENT_TEAM=2W4T123443 ./make-demo.sh (but with your id)"
     printf "Skipping macCatalyst test"
     printf "\n\n\n\n\n**********************************\n\n\n\n"
+  else
+    # Verify we have ios-deploy installed, otherwise install it
+    if ! npm list --global |grep ios-deploy; then
+      echo "You must install ios-deploy globally for macCatalyst to work - npm install -g ios-deploy"
+    fi
   fi
 fi
 
@@ -190,6 +195,10 @@ rm -f android/app/build.gradle??
 sed -i -e $'s/hermes_enabled => false/hermes_enabled => true/' ios/Podfile  # RN68 style hermes enable
 rm -f ios/Podfile??
 sed -i -e $'s/hermes_enabled => flags\[:hermes_enabled\]/hermes_enabled => true/' ios/Podfile  # RN69 style hermes enable
+rm -f ios/Podfile??
+
+# Temporary until 0.69.0-rc.3 (rc.2 is broken on ios with hermes enabled)
+sed -i -e $'s/hermes_enabled => true/hermes_enabled => false/' ios/Podfile  # RN68 style hermes enable
 rm -f ios/Podfile??
 
 # Apple builds in general have a problem with architectures on Apple Silicon and Intel, and doing some exclusions should help
