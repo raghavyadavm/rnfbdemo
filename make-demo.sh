@@ -208,9 +208,6 @@ rm -f ios/Podfile??
 
 # In case we have any patches
 echo "Running any patches necessary to compile successfully"
-# - we have one patch for react-native 0.68.0-rc.2 to make static framework compilation on iOS work
-# - we have one patch for @react-native-firebase/storage to make catalyst build flavor of iOS work that needs a PR
-# - there is a hard-coding of flipper pods below that will be unnecessary with react-native 0.68.0-rc.3+ when it's integrated upstream
 cp -rv ../patches .
 npm_config_yes=true npx patch-package
 
@@ -223,9 +220,11 @@ if [ "$(uname)" == "Darwin" ]; then
   npm_config_yes=true npx pod-install
 
   # Check iOS debug mode compile
+    printf "\n\n\n\n\n\nRunning iOS Debug build\n\n\n\n\n"
   npx react-native run-ios
 
   # Check iOS release mode compile
+    printf "\n\n\n\n\n\nRunning iOS Release build\n\n\n\n\n"
   npx react-native run-ios --configuration "Release"
 
   # Check catalyst build
@@ -258,6 +257,7 @@ if [ "$(uname)" == "Darwin" ]; then
     # Need to check if the development team id is valid? error 70 indicates team not added as account / cert not present / xcode does not have access to keychain?
     # Also, this is still failing on an M1. Works on x86_64:
     # https://github.com/facebook/flipper/issues/3117#issuecomment-1072462848
+    printf "\n\n\n\n\n\nRunning macCatalyst build\n\n\n\n\n"
     npx react-native run-ios --device "$(scutil --get ComputerName)"
   fi
 
@@ -282,6 +282,7 @@ if [ "$(uname)" == "Darwin" ]; then
   rm -f ios/Podfile.??
   npm_config_yes=true npx pod-install
 
+    printf "\n\n\n\n\n\nRunning iOS Static Frameworks build\n\n\n\n\n"
   npx react-native run-ios
 
   # end of static frameworks workarounds + test
@@ -320,7 +321,7 @@ pushd android
 popd
 
 # Run it for Android (assumes you have an android emulator running)
-echo "Running android app"
+printf "\n\n\n\n\n\nRunning Android release build\n\n\n\n\n"
 npx react-native run-android --variant release --no-jetifier
 
 # Let it start up, then uninstall it (otherwise ABI-split-generated version codes will prevent debug from installing)
@@ -331,4 +332,5 @@ popd
 
 # may or may not be commented out, depending on if have an emulator available
 # I run it manually in testing when I have one, comment if you like
+printf "\n\n\n\n\n\nRunning Android debug build\n\n\n\n\n"
 npx react-native run-android --no-jetifier
