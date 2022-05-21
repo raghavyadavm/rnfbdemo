@@ -269,26 +269,29 @@ if [ "$(uname)" == "Darwin" ]; then
   #################################
   # Check static frameworks compile
 
+  ## Per @hramos "new architecture does not support static frameworks", pursuing whether that still applies
+  ## even with new architecture disabled, and/or what is left to actually support it with static frameworks...
+
   # Static frameworks does not work with hermes and flipper - toggle them both off again
-  sed -i -e $'s/use_flipper/#use_flipper/' ios/Podfile
-  rm -f ios/Podfile.??
-  sed -i -e $'s/flipper_post_install/#flipper_post_install/' ios/Podfile
-  rm -f ios/Podfile.??
-  sed -i -e $'s/hermes_enabled => true/hermes_enabled => false/' ios/Podfile
-  rm -f ios/Podfile??
+  # sed -i -e $'s/use_flipper/#use_flipper/' ios/Podfile
+  # rm -f ios/Podfile.??
+  # sed -i -e $'s/flipper_post_install/#flipper_post_install/' ios/Podfile
+  # rm -f ios/Podfile.??
+  # sed -i -e $'s/hermes_enabled => true/hermes_enabled => false/' ios/Podfile
+  # rm -f ios/Podfile??
 
   # This is how you configure for static frameworks:
-  sed -i -e $'s/config = use_native_modules!/config = use_native_modules!\\\n  config = use_frameworks!\\\n  $RNFirebaseAsStaticFramework = true/' ios/Podfile
-  rm -f ios/Podfile??
+  # sed -i -e $'s/config = use_native_modules!/config = use_native_modules!\\\n  config = use_frameworks!\\\n  $RNFirebaseAsStaticFramework = true/' ios/Podfile
+  # rm -f ios/Podfile??
 
   # Workaround needed for static framework build only, regular build is fine.
   # https://github.com/facebook/react-native/issues/31149#issuecomment-800841668
-  sed -i -e $'s/react_native_post_install(installer)/react_native_post_install(installer)\\\n    installer.pods_project.targets.each do |target|\\\n      if (target.name.eql?(\'FBReactNativeSpec\'))\\\n        target.build_phases.each do |build_phase|\\\n          if (build_phase.respond_to?(:name) \&\& build_phase.name.eql?(\'[CP-User] Generate Specs\'))\\\n            target.build_phases.move(build_phase, 0)\\\n          end\\\n        end\\\n      end\\\n    end/' ios/Podfile
-  rm -f ios/Podfile.??
-  npm_config_yes=true npx pod-install
+  # sed -i -e $'s/react_native_post_install(installer)/react_native_post_install(installer)\\\n    installer.pods_project.targets.each do |target|\\\n      if (target.name.eql?(\'FBReactNativeSpec\'))\\\n        target.build_phases.each do |build_phase|\\\n          if (build_phase.respond_to?(:name) \&\& build_phase.name.eql?(\'[CP-User] Generate Specs\'))\\\n            target.build_phases.move(build_phase, 0)\\\n          end\\\n        end\\\n      end\\\n    end/' ios/Podfile
+  # rm -f ios/Podfile.??
+  # npm_config_yes=true npx pod-install
 
-    printf "\n\n\n\n\n\nRunning iOS Static Frameworks build\n\n\n\n\n"
-  npx react-native run-ios
+  # printf "\n\n\n\n\n\nRunning iOS Static Frameworks build\n\n\n\n\n"
+  # npx react-native run-ios
 
   # end of static frameworks workarounds + test
   #############################################
