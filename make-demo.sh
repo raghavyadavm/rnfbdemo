@@ -1,48 +1,48 @@
 #!/bin/bash
 set -e 
 
-# We need to verify our environment first, so we fail fast for easily detectable things
-if [ "$(uname)" == "Darwin" ]; then
-  # If the keychain is unlocked then this fails in the middle, let's check that now and fail fast
-  if ! security show-keychain-info login.keychain > /dev/null 2>&1; then
-    echo "Login keychain is not unlocked, codesigning will fail so macCatalyst build wll fail."
-    echo "run 'security unlock-keychain login.keychain' to unlock the login keychain then re-run"
-    exit 1
-  fi
+# # We need to verify our environment first, so we fail fast for easily detectable things
+# if [ "$(uname)" == "Darwin" ]; then
+#   # If the keychain is unlocked then this fails in the middle, let's check that now and fail fast
+#   if ! security show-keychain-info login.keychain > /dev/null 2>&1; then
+#     echo "Login keychain is not unlocked, codesigning will fail so macCatalyst build wll fail."
+#     echo "run 'security unlock-keychain login.keychain' to unlock the login keychain then re-run"
+#     exit 1
+#   fi
 
-  # We do not want to run under Rosetta 2, brew doesn't work and compiles might not work after
-  arch_name="$(uname -m)"
-  if [ "${arch_name}" = "x86_64" ]; then
-    if [ "$(sysctl -in sysctl.proc_translated)" = "1" ]; then
-      echo "Running on Rosetta 2"
-      echo "This is not supported. Run \`env /usr/bin/arch -arm64 /bin/bash --login\` then try again"
-      exit 1
-    else
-      echo "Running on native Intel"
-    fi
-  elif [ "${arch_name}" = "arm64" ]; then
-    echo "Running on ARM"
-  else
-    echo "Unknown architecture: ${arch_name}"
-  fi
+#   # We do not want to run under Rosetta 2, brew doesn't work and compiles might not work after
+#   arch_name="$(uname -m)"
+#   if [ "${arch_name}" = "x86_64" ]; then
+#     if [ "$(sysctl -in sysctl.proc_translated)" = "1" ]; then
+#       echo "Running on Rosetta 2"
+#       echo "This is not supported. Run \`env /usr/bin/arch -arm64 /bin/bash --login\` then try again"
+#       exit 1
+#     else
+#       echo "Running on native Intel"
+#     fi
+#   elif [ "${arch_name}" = "arm64" ]; then
+#     echo "Running on ARM"
+#   else
+#     echo "Unknown architecture: ${arch_name}"
+#   fi
 
-  # We need a development team or macCatalyst build will fail
-  if [ "$XCODE_DEVELOPMENT_TEAM" == "" ]; then
-    printf "\n\n\n\n\n**********************************\n\n\n\n"
-    printf "You must set XCODE_DEVELOPMENT_TEAM environment variable to your team id to test macCatalyst"
-    printf "Try running it like: XCODE_DEVELOPMENT_TEAM=2W4T123443 ./make-demo.sh (but with your id)"
-    printf "Skipping macCatalyst test"
-    printf "\n\n\n\n\n**********************************\n\n\n\n"
-  else
-    # Verify we have ios-deploy installed, otherwise install it
-    if ! npm list --global |grep ios-deploy; then
-      echo "You must install ios-deploy globally for macCatalyst to work - npm install -g ios-deploy"
-    fi
-  fi
-fi
+#   # We need a development team or macCatalyst build will fail
+#   if [ "$XCODE_DEVELOPMENT_TEAM" == "" ]; then
+#     printf "\n\n\n\n\n**********************************\n\n\n\n"
+#     printf "You must set XCODE_DEVELOPMENT_TEAM environment variable to your team id to test macCatalyst"
+#     printf "Try running it like: XCODE_DEVELOPMENT_TEAM=2W4T123443 ./make-demo.sh (but with your id)"
+#     printf "Skipping macCatalyst test"
+#     printf "\n\n\n\n\n**********************************\n\n\n\n"
+#   else
+#     # Verify we have ios-deploy installed, otherwise install it
+#     if ! npm list --global |grep ios-deploy; then
+#       echo "You must install ios-deploy globally for macCatalyst to work - npm install -g ios-deploy"
+#     fi
+#   fi
+# fi
 
 # Previous compiles may confound future compiles, erase...
-\rm -fr "$HOME/Library/Developer/Xcode/DerivedData/rnfbdemo*"
+# \rm -fr "$HOME/Library/Developer/Xcode/DerivedData/rnfbdemo*"
 
 # Basic template create, rnfb install, link
 \rm -fr rnfbdemo
@@ -64,7 +64,7 @@ fi
 
 # Now run our initial dependency install
 yarn
-npm_config_yes=true npx pod-install
+# npm_config_yes=true npx pod-install
 
 # This is the most basic integration
 echo "Adding react-native-firebase core app package"
@@ -98,14 +98,14 @@ echo "of this repository"
 
 echo "Copying in Firebase android json and iOS plist app definition files downloaded from console"
 
-if [ "$(uname)" == "Darwin" ]; then
-  if [ -f "../GoogleService-Info.plist" ]; then
-    cp ../GoogleService-Info.plist ios/rnfbdemo/
-  else
-    echo "Unable to locate the file 'GoogleServices-Info.plist', did you create the firebase project and download the iOS file?"
-    exit 1
-  fi
-fi
+# if [ "$(uname)" == "Darwin" ]; then
+#   if [ -f "../GoogleService-Info.plist" ]; then
+#     cp ../GoogleService-Info.plist ios/rnfbdemo/
+#   else
+#     echo "Unable to locate the file 'GoogleServices-Info.plist', did you create the firebase project and download the iOS file?"
+#     exit 1
+#   fi
+# fi
 if [ -f "../google-services.json" ]; then
   cp ../google-services.json android/app/
 else
@@ -113,22 +113,22 @@ else
   exit 1
 fi
 
-# Set up python virtual environment so we can do some local mods to Xcode project with mod-pbxproj
-# FIXME need to verify that python3 exists (recommend brew) and has venv module installed
-echo "Setting up python virtual environment + mod-pbxproj for Xcode project edits"
-python3 -m venv virtualenv
-source virtualenv/bin/activate
-pip install pbxproj
+# # Set up python virtual environment so we can do some local mods to Xcode project with mod-pbxproj
+# # FIXME need to verify that python3 exists (recommend brew) and has venv module installed
+# echo "Setting up python virtual environment + mod-pbxproj for Xcode project edits"
+# python3 -m venv virtualenv
+# source virtualenv/bin/activate
+# pip install pbxproj
 
-# set PRODUCT_BUNDLE_IDENTIFIER to com.rnfbdemo
-sed -i -e $'s/org.reactjs.native.example/com/' ios/rnfbdemo.xcodeproj/project.pbxproj
-rm -f ios/rnfbdemo.xcodeproj/project.pbxproj-e
+# # set PRODUCT_BUNDLE_IDENTIFIER to com.rnfbdemo
+# sed -i -e $'s/org.reactjs.native.example/com/' ios/rnfbdemo.xcodeproj/project.pbxproj
+# rm -f ios/rnfbdemo.xcodeproj/project.pbxproj-e
 
-# Add our Google Services file to the Xcode project
-pbxproj file ios/rnfbdemo.xcodeproj rnfbdemo/GoogleService-Info.plist --target rnfbdemo
+# # Add our Google Services file to the Xcode project
+# pbxproj file ios/rnfbdemo.xcodeproj rnfbdemo/GoogleService-Info.plist --target rnfbdemo
 
-# Toggle on iPad: add build flag: TARGETED_DEVICE_FAMILY = "1,2"
-pbxproj flag ios/rnfbdemo.xcodeproj --target rnfbdemo TARGETED_DEVICE_FAMILY "1,2"
+# # Toggle on iPad: add build flag: TARGETED_DEVICE_FAMILY = "1,2"
+# pbxproj flag ios/rnfbdemo.xcodeproj --target rnfbdemo TARGETED_DEVICE_FAMILY "1,2"
 
 # From this point on we are adding optional modules
 # First set up all the modules that need no further config for the demo 
@@ -220,90 +220,90 @@ echo "Running any patches necessary to compile successfully"
 cp -rv ../patches .
 npm_config_yes=true npx patch-package
 
-# Run the thing for iOS
-if [ "$(uname)" == "Darwin" ]; then
+# # Run the thing for iOS
+# if [ "$(uname)" == "Darwin" ]; then
 
-  echo "Installing pods and running iOS app"
-  export CC=clang
-  export CXX=clang++
-  npm_config_yes=true npx pod-install
+#   echo "Installing pods and running iOS app"
+#   export CC=clang
+#   export CXX=clang++
+#   npm_config_yes=true npx pod-install
 
-  # Check iOS debug mode compile
-    printf "\n\n\n\n\n\nRunning iOS Debug build\n\n\n\n\n"
-  npx react-native run-ios
+#   # Check iOS debug mode compile
+#     printf "\n\n\n\n\n\nRunning iOS Debug build\n\n\n\n\n"
+#   npx react-native run-ios
 
-  # Check iOS release mode compile
-    printf "\n\n\n\n\n\nRunning iOS Release build\n\n\n\n\n"
-  npx react-native run-ios --configuration "Release"
+#   # Check iOS release mode compile
+#     printf "\n\n\n\n\n\nRunning iOS Release build\n\n\n\n\n"
+#   npx react-native run-ios --configuration "Release"
 
-  # Check catalyst build
-  if ! [ "$XCODE_DEVELOPMENT_TEAM" == "" ]; then
+#   # Check catalyst build
+#   if ! [ "$XCODE_DEVELOPMENT_TEAM" == "" ]; then
 
-    echo "Adding macCatalyst entitlements file / build flags to Xcode project"
-    cp ../rnfbdemo.entitlements ios/rnfbdemo/
-    # add file rnfbdemo/rnfbdemo.entitlements, with reference to rnfbdemo target, but no build phase
-    pbxproj file ios/rnfbdemo.xcodeproj rnfbdemo/rnfbdemo.entitlements --target rnfbdemo -C
-    # add build flag: CODE_SIGN_ENTITLEMENTS = rnfbdemo/rnfbdemo.entitlements
-    pbxproj flag ios/rnfbdemo.xcodeproj --target rnfbdemo CODE_SIGN_ENTITLEMENTS rnfbdemo/rnfbdemo.entitlements
-    # add build flag: SUPPORTS_MACCATALYST = YES
-    pbxproj flag ios/rnfbdemo.xcodeproj --target rnfbdemo SUPPORTS_MACCATALYST YES
-    # add build flag 				DEVELOPMENT_TEAM = 2W4T2B656C;
-    pbxproj flag ios/rnfbdemo.xcodeproj --target rnfbdemo DEVELOPMENT_TEAM "$XCODE_DEVELOPMENT_TEAM"
-    # add build flag 				DEAD_CODE_STRIPPING = YES;
-    pbxproj flag ios/rnfbdemo.xcodeproj --target rnfbdemo DEAD_CODE_STRIPPING YES
+#     echo "Adding macCatalyst entitlements file / build flags to Xcode project"
+#     cp ../rnfbdemo.entitlements ios/rnfbdemo/
+#     # add file rnfbdemo/rnfbdemo.entitlements, with reference to rnfbdemo target, but no build phase
+#     pbxproj file ios/rnfbdemo.xcodeproj rnfbdemo/rnfbdemo.entitlements --target rnfbdemo -C
+#     # add build flag: CODE_SIGN_ENTITLEMENTS = rnfbdemo/rnfbdemo.entitlements
+#     pbxproj flag ios/rnfbdemo.xcodeproj --target rnfbdemo CODE_SIGN_ENTITLEMENTS rnfbdemo/rnfbdemo.entitlements
+#     # add build flag: SUPPORTS_MACCATALYST = YES
+#     pbxproj flag ios/rnfbdemo.xcodeproj --target rnfbdemo SUPPORTS_MACCATALYST YES
+#     # add build flag 				DEVELOPMENT_TEAM = 2W4T2B656C;
+#     pbxproj flag ios/rnfbdemo.xcodeproj --target rnfbdemo DEVELOPMENT_TEAM "$XCODE_DEVELOPMENT_TEAM"
+#     # add build flag 				DEAD_CODE_STRIPPING = YES;
+#     pbxproj flag ios/rnfbdemo.xcodeproj --target rnfbdemo DEAD_CODE_STRIPPING YES
 
-    # Add necessary Podfile hack to sign resource bundles for macCatalyst local development
-    sed -i -e $'s/react_native_post_install(installer)/react_native_post_install(installer)\\\n    \\\n    installer.pods_project.targets.each do |target|\\\n      if target.respond_to?(:product_type) and target.product_type == "com.apple.product-type.bundle"\\\n        target.build_configurations.each do |config|\\\n          config.build_settings["CODE_SIGN_IDENTITY[sdk=macosx*]"] = "-"\\\n        end\\\n      end\\\n    end/' ios/Podfile
-    rm -f ios/Podfile-e
+#     # Add necessary Podfile hack to sign resource bundles for macCatalyst local development
+#     sed -i -e $'s/react_native_post_install(installer)/react_native_post_install(installer)\\\n    \\\n    installer.pods_project.targets.each do |target|\\\n      if target.respond_to?(:product_type) and target.product_type == "com.apple.product-type.bundle"\\\n        target.build_configurations.each do |config|\\\n          config.build_settings["CODE_SIGN_IDENTITY[sdk=macosx*]"] = "-"\\\n        end\\\n      end\\\n    end/' ios/Podfile
+#     rm -f ios/Podfile-e
 
-    # macCatalyst requires one extra path on linker line: '$(SDKROOT)/System/iOSSupport/usr/lib/swift'
-    sed -i -e $'s/react_native_post_install(installer)/react_native_post_install(installer)\\\n    \\\n    installer.aggregate_targets.each do |aggregate_target|\\\n      aggregate_target.user_project.native_targets.each do |target|\\\n        target.build_configurations.each do |config|\\\n          config.build_settings[\'LIBRARY_SEARCH_PATHS\'] = [\'$(SDKROOT)\/usr\/lib\/swift\', \'$(SDKROOT)\/System\/iOSSupport\/usr\/lib\/swift\', \'$(inherited)\']\\\n        end\\\n      end\\\n      aggregate_target.user_project.save\\\n    end/' ios/Podfile
-    rm -f ios/Podfile.??
+#     # macCatalyst requires one extra path on linker line: '$(SDKROOT)/System/iOSSupport/usr/lib/swift'
+#     sed -i -e $'s/react_native_post_install(installer)/react_native_post_install(installer)\\\n    \\\n    installer.aggregate_targets.each do |aggregate_target|\\\n      aggregate_target.user_project.native_targets.each do |target|\\\n        target.build_configurations.each do |config|\\\n          config.build_settings[\'LIBRARY_SEARCH_PATHS\'] = [\'$(SDKROOT)\/usr\/lib\/swift\', \'$(SDKROOT)\/System\/iOSSupport\/usr\/lib\/swift\', \'$(inherited)\']\\\n        end\\\n      end\\\n      aggregate_target.user_project.save\\\n    end/' ios/Podfile
+#     rm -f ios/Podfile.??
 
-    npm_config_yes=true npx pod-install
+#     npm_config_yes=true npx pod-install
 
-    # Now run it with our mac device name as device target, that triggers catalyst build
-    # Need to check if the development team id is valid? error 70 indicates team not added as account / cert not present / xcode does not have access to keychain?
-    # Also, this is still failing on an M1. Works on x86_64:
-    # https://github.com/facebook/flipper/issues/3117#issuecomment-1072462848
-    printf "\n\n\n\n\n\nRunning macCatalyst build\n\n\n\n\n"
-    npx react-native run-ios --device "$(scutil --get ComputerName)"
-  fi
+#     # Now run it with our mac device name as device target, that triggers catalyst build
+#     # Need to check if the development team id is valid? error 70 indicates team not added as account / cert not present / xcode does not have access to keychain?
+#     # Also, this is still failing on an M1. Works on x86_64:
+#     # https://github.com/facebook/flipper/issues/3117#issuecomment-1072462848
+#     printf "\n\n\n\n\n\nRunning macCatalyst build\n\n\n\n\n"
+#     npx react-native run-ios --device "$(scutil --get ComputerName)"
+#   fi
 
-  #################################
-  # Check static frameworks compile
+#   #################################
+#   # Check static frameworks compile
 
-  ## Per @hramos "new architecture does not support static frameworks", pursuing whether that still applies
-  ## even with new architecture disabled, and/or what is left to actually support it with static frameworks...
+#   ## Per @hramos "new architecture does not support static frameworks", pursuing whether that still applies
+#   ## even with new architecture disabled, and/or what is left to actually support it with static frameworks...
 
-  # Static frameworks does not work with hermes and flipper - toggle them both off again
-  # sed -i -e $'s/use_flipper/#use_flipper/' ios/Podfile
-  # rm -f ios/Podfile.??
-  # sed -i -e $'s/flipper_post_install/#flipper_post_install/' ios/Podfile
-  # rm -f ios/Podfile.??
-  # sed -i -e $'s/hermes_enabled => true/hermes_enabled => false/' ios/Podfile
-  # rm -f ios/Podfile??
+#   # Static frameworks does not work with hermes and flipper - toggle them both off again
+#   # sed -i -e $'s/use_flipper/#use_flipper/' ios/Podfile
+#   # rm -f ios/Podfile.??
+#   # sed -i -e $'s/flipper_post_install/#flipper_post_install/' ios/Podfile
+#   # rm -f ios/Podfile.??
+#   # sed -i -e $'s/hermes_enabled => true/hermes_enabled => false/' ios/Podfile
+#   # rm -f ios/Podfile??
 
-  # This is how you configure for static frameworks:
-  # sed -i -e $'s/config = use_native_modules!/config = use_native_modules!\\\n  config = use_frameworks!\\\n  $RNFirebaseAsStaticFramework = true/' ios/Podfile
-  # rm -f ios/Podfile??
+#   # This is how you configure for static frameworks:
+#   # sed -i -e $'s/config = use_native_modules!/config = use_native_modules!\\\n  config = use_frameworks!\\\n  $RNFirebaseAsStaticFramework = true/' ios/Podfile
+#   # rm -f ios/Podfile??
 
-  # Workaround needed for static framework build only, regular build is fine.
-  # https://github.com/facebook/react-native/issues/31149#issuecomment-800841668
-  # sed -i -e $'s/react_native_post_install(installer)/react_native_post_install(installer)\\\n    installer.pods_project.targets.each do |target|\\\n      if (target.name.eql?(\'FBReactNativeSpec\'))\\\n        target.build_phases.each do |build_phase|\\\n          if (build_phase.respond_to?(:name) \&\& build_phase.name.eql?(\'[CP-User] Generate Specs\'))\\\n            target.build_phases.move(build_phase, 0)\\\n          end\\\n        end\\\n      end\\\n    end/' ios/Podfile
-  # rm -f ios/Podfile.??
-  # npm_config_yes=true npx pod-install
+#   # Workaround needed for static framework build only, regular build is fine.
+#   # https://github.com/facebook/react-native/issues/31149#issuecomment-800841668
+#   # sed -i -e $'s/react_native_post_install(installer)/react_native_post_install(installer)\\\n    installer.pods_project.targets.each do |target|\\\n      if (target.name.eql?(\'FBReactNativeSpec\'))\\\n        target.build_phases.each do |build_phase|\\\n          if (build_phase.respond_to?(:name) \&\& build_phase.name.eql?(\'[CP-User] Generate Specs\'))\\\n            target.build_phases.move(build_phase, 0)\\\n          end\\\n        end\\\n      end\\\n    end/' ios/Podfile
+#   # rm -f ios/Podfile.??
+#   # npm_config_yes=true npx pod-install
 
-  # printf "\n\n\n\n\n\nRunning iOS Static Frameworks build\n\n\n\n\n"
-  # npx react-native run-ios
+#   # printf "\n\n\n\n\n\nRunning iOS Static Frameworks build\n\n\n\n\n"
+#   # npx react-native run-ios
 
-  # end of static frameworks workarounds + test
-  #############################################
+#   # end of static frameworks workarounds + test
+#   #############################################
 
-  # workaround for poorly setup Android SDK environments
-  USER=$(whoami)
-  echo "sdk.dir=/Users/$USER/Library/Android/sdk" > android/local.properties
-fi
+#   # workaround for poorly setup Android SDK environments
+#   USER=$(whoami)
+#   echo "sdk.dir=/Users/$USER/Library/Android/sdk" > android/local.properties
+# fi
 
 echo "Configuring Android release build for ABI splits and code shrinking"
 sed -i -e $'s/def enableSeparateBuildPerCPUArchitecture = false/def enableSeparateBuildPerCPUArchitecture = true/' android/app/build.gradle
@@ -328,21 +328,25 @@ if [ "$(uname -a | grep Linux | grep -c microsoft)" == "1" ]; then
 fi
 
 # uninstall it (just in case, otherwise ABI-split-generated version codes will prevent debug from installing)
-pushd android
-./gradlew uninstallRelease
-popd
+# pushd android
+# ./gradlew uninstallRelease
+# popd
 
 # Run it for Android (assumes you have an android emulator running)
 printf "\n\n\n\n\n\nRunning Android release build\n\n\n\n\n"
-npx react-native run-android --variant release --no-jetifier
+# npx react-native run-android --variant release --no-jetifier
 
 # Let it start up, then uninstall it (otherwise ABI-split-generated version codes will prevent debug from installing)
-sleep 10
-pushd android
-./gradlew uninstallRelease
-popd
+# sleep 10
+# pushd android
+# ./gradlew uninstallRelease
+# popd
 
 # may or may not be commented out, depending on if have an emulator available
 # I run it manually in testing when I have one, comment if you like
-printf "\n\n\n\n\n\nRunning Android debug build\n\n\n\n\n"
-npx react-native run-android --no-jetifier
+# printf "\n\n\n\n\n\nRunning Android debug build\n\n\n\n\n"
+# npx react-native run-android --no-jetifier
+
+# WARNING:R8: Missing class com.google.firebase.messaging.TopicOperation$TopicOperations (referenced from: void com.google.firebase.messaging.TopicOperation.<init>(java.lang.String, java.lang.String)
+pushd android
+./gradlew clean -x :app:bundleReleaseJsAndAssets :app:minifyReleaseWithR8 --rerun-tasks
